@@ -308,9 +308,30 @@ do
 
         -- Register widget
         vicious.register(w_cpu_g, vicious.widgets.cpu, "$1", 3)
+        left_widgets = join_tables(left_widgets, {separator, w_cpu_img, spacer, w_cpu_g})
+        -- }}}
+        --
+        -- {{{ Memory usage
+        local w_mem_img = widget({ type = "imagebox" })
+        w_mem_img.image = image(beautiful.widget_mem)
+
+        -- Initialize widget
+        w_mem_b = awful.widget.progressbar()
+        -- Pogressbar properties
+        w_mem_b:set_width(10)
+        w_mem_b:set_height(14)
+        w_mem_b:set_vertical(true)
+        w_mem_b:set_background_color(beautiful.fg_off_widget)
+        w_mem_b:set_border_color(beautiful.border_widget)
+        w_mem_b:set_color(beautiful.fg_widget)
+        w_mem_b:set_gradient_colors({ beautiful.fg_widget,
+           beautiful.fg_center_widget, beautiful.fg_end_widget
+        })
+        -- Register widget
+        vicious.register(w_mem_b, vicious.widgets.mem, "$1", 13)
+        left_widgets = join_tables(left_widgets, {separator, w_mem_img, spacer, w_mem_b})
         -- }}}
 
-        left_widgets = join_tables(left_widgets, {separator, w_cpu_img, spacer, w_cpu_g})
     end
 
     table.insert(right_widgets, left_widgets)
