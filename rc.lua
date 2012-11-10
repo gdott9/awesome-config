@@ -39,6 +39,8 @@ end
 debug_mode = debug_mode or false
 wifi = wifi or false
 network = network or false
+sound = sound or "alsa"
+channel = channel or "pcm"
 
 theme = theme or "dark"
 -- Themes define colours, icons, and wallpapers
@@ -78,6 +80,13 @@ if not shifty_loaded then
     error("needs shifty to run properly")
 end
 -- Widgets library
+iniquitous_loaded = pcall(function() require("iniquitous") end)
+if not iniquitous_loaded then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, Iniquitous is not available!",
+                     text = "Install Iniquitous library to use more widgets." })
+    io.stderr:write("needs iniquitous for more advanced widgets\n")
+end
 vicious_loaded = pcall(function() require("vicious") end)
 if not vicious_loaded then
     naughty.notify({ preset = naughty.config.presets.critical,
@@ -99,9 +108,8 @@ shifty.config.apps = {
         { match = {"Iceweasel.*", "Firefox.*", "Namoroka.*", "Minefield.*"       }, tag = "3:www"},
         { match = {"Icedove.*", "Thunderbird.*", "Lanikai.*"       }, tag = "5:mail"},
         { match = {"Irssi" }, tag = "4:im", screen = 1, nopopup = true},
-        { match = {"Pidgin*" }, tag = "8:im", screen = 2, nopopup = true},
-        { match = {"Gajim*" }, tag = "8:im", screen = 2, nopopup = true},
-        { match = {"Rhythmbox" }, tag = "5:media", screen = 1, nopopup = true},
+        { match = {"Pidgin*" }, tag = "4:im", screen = math.max(screen.count(), 2), nopopup = true},
+        { match = {"Gajim*" }, tag = "4:im", screen = math.max(screen.count(), 2), nopopup = true},
         { match = {"Ardour.*", "Jamin",             }, tag = "ardour"},
         { match = {"Gimp"                           }, tag = "gimp"},
         { match = {"TuxGuitar*"                           }, tag = "tuxguitar"},
@@ -237,6 +245,14 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                               if client.focus then client.focus:raise() end
                                           end))
+                                          --
+-- {{{ MPD widget
+w_music_img = widget({ type = "imagebox" })
+w_music_img.image = image(beautiful.widget_music)
+
+w_music_tb = iniquitous.mpc.init()
+-- }}}
+
 for s = 1, screen.count() do
     -- Create a promptbox
     mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
@@ -267,6 +283,8 @@ for s = 1, screen.count() do
         },
         s == 1 and mysystray or nil,
         mytextclock,
+        s == 2 and w_music_tb or nil,
+        s == 2 and w_music_img or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
     }
@@ -292,6 +310,9 @@ do
 
     left_widgets = join_tables(left_widgets, {w_kernel_img, spacer, w_kernel_tb})
     -- }}}
+
+    -- Textclock
+    right_widgets = join_tables(right_widgets, {mytextclock, separator})
 
     if vicious_loaded then
         -- {{{ CPU
@@ -388,6 +409,19 @@ do
             left_widgets = join_tables(left_widgets, {separator, w_netdown_img, spacer, w_net_tb, spacer, w_netup_img})
             -- }}}
         end
+    end
+
+    if iniquitous_loaded then
+        -- {{{ Volume widget
+        iniquitous.volume.init(sound, channel)
+        local w_vol_tb = iniquitous.volume.textbox()
+        local w_vol_img = iniquitous.volume.imagebox()
+
+        right_widgets = join_tables(right_widgets, {w_vol_tb, spacer, w_vol_img, separator})
+        -- }}}
+
+        -- MPD widget
+        right_widgets = join_tables(right_widgets, {w_music_tb, spacer, w_music_img})
     end
 
     table.insert(right_widgets, left_widgets)
@@ -548,6 +582,8 @@ globalkeys = awful.util.table.join(
 
 -- Set keys
 root.keys(globalkeys)
+shifty.config.globalkeys = globalkeys
+shifty.config.clientkeys = clientkeys
 -- }}}
 
 -- {{{ Signals
