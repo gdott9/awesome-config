@@ -37,6 +37,9 @@ end
 
 -- {{{ Variable definitions
 debug_mode = debug_mode or false
+wifi = wifi or false
+network = network or false
+
 theme = theme or "dark"
 -- Themes define colours, icons, and wallpapers
 beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/"..theme.."/theme.lua")
@@ -326,6 +329,65 @@ do
         left_widgets = join_tables(left_widgets, {separator, w_mem_img, spacer, w_mem_b})
         -- }}}
 
+        -- {{{ File system usage
+        w_fs_img = widget({ type = "imagebox" })
+        w_fs_img.image = image(beautiful.widget_fs)
+        -- Initialize widgets
+        w_fs_p = {
+          r = awful.widget.progressbar(),
+          h = awful.widget.progressbar()
+        }
+        w_fs_tb = {
+            r = widget({ type = "textbox" }),
+            h = widget({ type = "textbox" })
+        }
+
+        -- Set progressbars properties
+        for _, w in pairs(w_fs_p) do
+          w:set_vertical(true)
+          w:set_height(14):set_width(5)
+          w:set_border_color(beautiful.border_widget)
+          w:set_background_color(beautiful.fg_off_widget)
+          w:set_color(beautiful.fg_widget)
+        end
+
+        -- Register widgets
+        vicious.register(w_fs_p.r, vicious.widgets.fs, "${/ usep}", 599)
+        vicious.register(w_fs_p.h, vicious.widgets.fs, "${/home usep}", 599)
+
+        vicious.register(w_fs_tb.r, vicious.widgets.fs, "${/ usep}%", 599)
+        vicious.register(w_fs_tb.h, vicious.widgets.fs, "${/home usep}%", 599)
+
+        left_widgets = join_tables(left_widgets,
+            {separator, w_fs_img, spacer,
+            w_fs_tb.r, spacer, w_fs_p.r, spacer,
+            w_fs_tb.h, spacer, w_fs_p.h})
+        -- }}}
+
+        if network then
+            -- {{{ Wifi Infos
+            if wifi then
+                w_wifi_img = widget({ type = "imagebox" })
+                w_wifi_img.image = image(beautiful.widget_wifi)
+
+                w_wifi_tb = widget({ type = "textbox" })
+                vicious.register(w_wifi_tb, vicious.widgets.wifi, '${link}% [${ssid}]', 2, network)
+                left_widgets = join_tables(left_widgets, {separator, w_wifi_img, spacer, w_wifi_tb})
+            end
+            -- }}}
+            -- {{{ Network usage
+            w_netdown_img = widget({ type = "imagebox" })
+            w_netdown_img.image = image(beautiful.widget_down)
+
+            w_netup_img = widget({ type = "imagebox" })
+            w_netup_img.image = image(beautiful.widget_up)
+
+            w_net_tb = widget({ type = "textbox" })
+            vicious.register(w_net_tb, vicious.widgets.net, '${'..network..' down_kb}  ${'..network..' up_kb}', 3)
+
+            left_widgets = join_tables(left_widgets, {separator, w_netdown_img, spacer, w_net_tb, spacer, w_netup_img})
+            -- }}}
+        end
     end
 
     table.insert(right_widgets, left_widgets)
