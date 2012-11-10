@@ -299,12 +299,10 @@ do
         local w_cpu_g = awful.widget.graph()
 
         -- options
-        w_cpu_g:set_width(50)
-        w_cpu_g:set_height(14)
-        w_cpu_g:set_background_color(beautiful.fg_off_widget)
+        w_cpu_g:set_height(14):set_width(50)
         w_cpu_g:set_border_color(beautiful.border_widget)
+        w_cpu_g:set_background_color(beautiful.fg_off_widget)
         w_cpu_g:set_color(beautiful.fg_widget)
-        w_cpu_g:set_gradient_colors({ beautiful.fg_widget, beautiful.fg_end_widget })
 
         -- Register widget
         vicious.register(w_cpu_g, vicious.widgets.cpu, "$1", 3)
@@ -318,15 +316,11 @@ do
         -- Initialize widget
         w_mem_b = awful.widget.progressbar()
         -- Pogressbar properties
-        w_mem_b:set_width(10)
-        w_mem_b:set_height(14)
+        w_mem_b:set_height(14):set_width(10)
         w_mem_b:set_vertical(true)
-        w_mem_b:set_background_color(beautiful.fg_off_widget)
         w_mem_b:set_border_color(beautiful.border_widget)
+        w_mem_b:set_background_color(beautiful.fg_off_widget)
         w_mem_b:set_color(beautiful.fg_widget)
-        w_mem_b:set_gradient_colors({ beautiful.fg_widget,
-           beautiful.fg_center_widget, beautiful.fg_end_widget
-        })
         -- Register widget
         vicious.register(w_mem_b, vicious.widgets.mem, "$1", 13)
         left_widgets = join_tables(left_widgets, {separator, w_mem_img, spacer, w_mem_b})
