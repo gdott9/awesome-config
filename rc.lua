@@ -579,12 +579,9 @@ globalkeys = awful.util.table.join(
     awful.key({ }, "XF86AudioPrev", function () awful.util.pread("mpc prev") end),
     awful.key({ }, "XF86AudioNext", function () awful.util.pread("mpc next") end),
 
-    --awful.key({ }, "XF86AudioMute", function () gdott9.volume.volume("mute") end),
-    --awful.key({ }, "XF86AudioLowerVolume", function () gdott9.volume.volume("down") end),
-    --awful.key({ }, "XF86AudioRaiseVolume", function () gdott9.volume.volume("up") end)
-    awful.key({ }, "XF86AudioMute", function () print("mute") end),
-    awful.key({ }, "XF86AudioLowerVolume", function () print("down") end),
-    awful.key({ }, "XF86AudioRaiseVolume", function () print("up") end)
+    awful.key({ }, "XF86AudioMute", function () iniquitous.volume.volume("mute") end),
+    awful.key({ }, "XF86AudioLowerVolume", function () iniquitous.volume.volume("down") end),
+    awful.key({ }, "XF86AudioRaiseVolume", function () iniquitous.volume.volume("up") end)
 )
 
 -- Set keys
