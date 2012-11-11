@@ -88,7 +88,9 @@ if not iniquitous_loaded then
     io.stderr:write("needs iniquitous for more advanced widgets\n")
 end
 vicious_loaded = pcall(function() require("vicious") end)
-if not vicious_loaded then
+if vicious_loaded then
+    vicious = package.loaded["vicious"]
+else
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, Vicious is not available!",
                      text = "Install Vicious library to use more widgets." })
@@ -103,6 +105,9 @@ shifty.config.tags = {
     ["3:www"] = { exclusive = true, max_clients = 1, position = 3, spawn = "firefox -P default"},
     ["4:im"] = { exclusive = true, init = true, position = 4 },
     ["5:mail"] = { exclusive = true, max_clients = 2, position = 5, spawn = "thunderbird"},
+    ["6:default"] = { init = true, position = 6, screen = 2 },
+    ["7:prog"] = { init = true, position = 7, screen = 2 },
+    ["8:im"] = { exclusive = true, init = true, position = 8, screen = 2, mwfact = 0.65 },
 }
 shifty.config.apps = {
         { match = {"Iceweasel.*", "Firefox.*", "Namoroka.*", "Minefield.*"       }, tag = "3:www"},
@@ -373,11 +378,11 @@ do
         end
 
         -- Register widgets
-        vicious.register(w_fs_p.r, vicious.widgets.fs, "${/ usep}", 599)
-        vicious.register(w_fs_p.h, vicious.widgets.fs, "${/home usep}", 599)
+        vicious.register(w_fs_p.r, vicious.widgets.fs, "${/ used_p}", 599)
+        vicious.register(w_fs_p.h, vicious.widgets.fs, "${/home used_p}", 599)
 
-        vicious.register(w_fs_tb.r, vicious.widgets.fs, "${/ usep}%", 599)
-        vicious.register(w_fs_tb.h, vicious.widgets.fs, "${/home usep}%", 599)
+        vicious.register(w_fs_tb.r, vicious.widgets.fs, "${/ used_p}%", 599)
+        vicious.register(w_fs_tb.h, vicious.widgets.fs, "${/home used_p}%", 599)
 
         left_widgets = join_tables(left_widgets,
             {separator, w_fs_img, spacer,
