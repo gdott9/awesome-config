@@ -4,3 +4,9 @@
 [submodule "vicious"]
 	path = vicious
 	url = http://git.sysphere.org/vicious/
+[submodule "themes"]
+	path = themes
+	url = https://github.com/gdott9/awesome-themes.git
+[submodule "iniquitous"]
+	path = iniquitous
+	url = https://github.com/gdott9/awesome-iniquitous.git
