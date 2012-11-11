@@ -541,17 +541,17 @@ for i = 1, keynumber do
     globalkeys = awful.util.table.join(globalkeys,
         awful.key({ modkey }, "#" .. i + 9,
                   function ()
-                        awful.tag.viewonly(shifty.getpos(i))
+                        awful.tag.viewonly(shifty.getpos(i, mouse.screen))
                   end),
         awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
-                      local t = shifty.getpos(i)
+                      local t = shifty.getpos(i, mouse.screen)
                       t.selected = not t.selected
                   end),
         awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                        local t = shifty.getpos(i)
+                        local t = shifty.getpos(i, mouse.screen)
                         awful.client.movetotag(t)
                         awful.tag.viewonly(t)
                       end
@@ -559,7 +559,7 @@ for i = 1, keynumber do
         awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          awful.client.toggletag(shifty.getpos(i))
+                          awful.client.toggletag(shifty.getpos(i, mouse.screen))
                       end
                   end))
 end
