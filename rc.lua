@@ -100,14 +100,11 @@ end
 
 -- {{{ Shifty Tags
 shifty.config.tags = {
-    ["1:default"] = { init = true, position = 1 },
-    ["2:prog"] = { init = true, position = 2 },
+    ["1:default"] = { init = true, position = 1, screen = {1, 2} },
+    ["2:prog"] = { init = true, position = 2, screen = {1, 2} },
     ["3:www"] = { exclusive = true, max_clients = 1, position = 3, spawn = "firefox -P default"},
-    ["4:im"] = { exclusive = true, init = true, position = 4 },
+    ["4:im"] = { exclusive = true, init = true, position = 4, screen = {1, 2} },
     ["5:mail"] = { exclusive = true, max_clients = 2, position = 5, spawn = "thunderbird"},
-    ["6:default"] = { init = true, position = 6, screen = 2 },
-    ["7:prog"] = { init = true, position = 7, screen = 2 },
-    ["8:im"] = { exclusive = true, init = true, position = 8, screen = 2, mwfact = 0.65 },
 }
 shifty.config.apps = {
         { match = {"Iceweasel.*", "Firefox.*", "Namoroka.*", "Minefield.*"       }, tag = "3:www"},
