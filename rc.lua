@@ -288,7 +288,9 @@ for s = 1, screen.count() do
         },
         s == 1 and mysystray or nil,
         mytextclock,
+        s == 2 and separator or nil,
         s == 2 and w_music_tb or nil,
+        s == 2 and spacer or nil,
         s == 2 and w_music_img or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
