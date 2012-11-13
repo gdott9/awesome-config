@@ -572,6 +572,8 @@ clientbuttons = awful.util.table.join(
 globalkeys = awful.util.table.join(
     globalkeys,
 
+    awful.key({ modkey,           }, "i", function () awful.util.spawn("xlock -mode blank") end),
+
     awful.key({ }, "XF86AudioPlay", function () awful.util.pread("mpc toggle") end),
     awful.key({ }, "XF86AudioPrev", function () awful.util.pread("mpc prev") end),
     awful.key({ }, "XF86AudioNext", function () awful.util.pread("mpc next") end),
