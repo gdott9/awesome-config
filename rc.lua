@@ -448,6 +448,7 @@ do
         -- }}}
     end
 
+    right_layout:add(separator)
     right_layout:add(mytextclock)
     mybottomwibox.widgets = right_widgets
     local layout = wibox.layout.align.horizontal()
