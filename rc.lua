@@ -150,21 +150,19 @@ mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesom
                                   }
                         })
 
-mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
+mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 -- }}}
 
 -- {{{ Wibox
 
 -- {{{ Reusable separators
-local spacer    = widget({ type = "textbox" })
-local separator = widget({ type = "textbox" })
-spacer.text     = " "
-separator.text  = "     "
+local spacer    = wibox.widget.textbox(" ")
+local separator = wibox.widget.textbox("     ")
 -- }}}
 
 -- Create a textclock widget
-mytextclock = awful.widget.textclock({ align = "right" }, " %a %b %d, %H:%M:%S ", 1)
+mytextclock = awful.widget.textclock(" %a %b %d, %H:%M:%S ", 1)
 
 -- Add a calendar on the textclock widget
 local calendar = nil
@@ -207,9 +205,6 @@ mytextclock:buttons(awful.util.table.join(
     awful.button({ }, 5, function() add_calendar(1) end)
 ))
 
-
--- Create a systray
-mysystray = widget({ type = "systray" })
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -254,15 +249,15 @@ mytasklist.buttons = awful.util.table.join(
                                           end))
                                           --
 -- {{{ MPD widget
-w_music_img = widget({ type = "imagebox" })
-w_music_img.image = image(beautiful.widget_music)
-
-w_music_tb = iniquitous.mpc.init()
+if iniquitous_loaded then
+    w_music_img = wibox.widget.imagebox(beautiful.widget_music)
+    w_music_tb = iniquitous.mpc.init()
+end
 -- }}}
 
 for s = 1, screen.count() do
     -- Create a promptbox
-    mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
+    mypromptbox[s] = awful.widget.prompt()
     -- Create a layoubox
     mylayoutbox[s] = awful.widget.layoutbox(s)
     mylayoutbox[s]:buttons(awful.util.table.join(
@@ -270,65 +265,63 @@ for s = 1, screen.count() do
                            awful.button({ }, 3, function () awful.layout.inc(layouts, 1) end)
                            ))
     -- Create a taglist widget
-    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
+    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
 
     -- Create a tasklist widget
-    mytasklist[s] = awful.widget.tasklist(function(c)
-                                              return awful.widget.tasklist.label.currenttags(c, s)
-                                          end, mytasklist.buttons)
+    mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ height = 15, position = "top", screen = s })
-    -- Add widgets to the wibox - order matters
-    mywibox[s].widgets = {
-        {
-            s == 1 and mylauncher or nil,
-            mytaglist[s],
-            mylayoutbox[s],
-            mypromptbox[s],
-            layout = awful.widget.layout.horizontal.leftright
-        },
-        s == 1 and mysystray or nil,
-        mytextclock,
-        s == 2 and separator or nil,
-        s == 2 and w_music_tb or nil,
-        s == 2 and spacer or nil,
-        s == 2 and w_music_img or nil,
-        mytasklist[s],
-        layout = awful.widget.layout.horizontal.rightleft
-    }
+
+    -- Widgets that are aligned to the left
+    local left_layout = wibox.layout.fixed.horizontal()
+    if s == 1 then left_layout:add(mylauncher) end
+    left_layout:add(mytaglist[s])
+    left_layout:add(mypromptbox[s])
+    left_layout:add(mylayoutbox[s])
+
+    -- Widgets that are aligned to the right
+    local right_layout = wibox.layout.fixed.horizontal()
+
+    if s == 2 and iniquitous_loaded then
+        right_layout:add(w_music_img)
+        right_layout:add(spacer)
+        right_layout:add(w_music_tb)
+        right_layout:add(separator)
+    end
+
+    right_layout:add(mytextclock)
+    if s == 1 then right_layout:add(wibox.widget.systray()) end
+
+    -- Now bring it all together (with the tasklist in the middle)
+    local layout = wibox.layout.align.horizontal()
+    layout:set_left(left_layout)
+    layout:set_middle(mytasklist[s])
+    layout:set_right(right_layout)
+
+    mywibox[s]:set_widget(layout)
 end
 
 -- {{{ Bottom Wibox
 do
     mybottomwibox = awful.wibox({ height = 14, position = "bottom", screen = 1 })
 
-    local left_widgets = {
-        layout = awful.widget.layout.horizontal.leftright
-    }
-    local right_widgets = {
-        layout = awful.widget.layout.horizontal.rightleft
-    }
+    local left_layout = wibox.layout.fixed.horizontal()
+    local right_layout = wibox.layout.fixed.horizontal()
 
     -- {{{ Kernel version
-    local w_kernel_img = widget({ type = "imagebox" })
-    w_kernel_img.image = image(beautiful.widget_pacman)
+    local w_kernel_img = wibox.widget.imagebox(beautiful.widget_pacman)
+    local w_kernel_tb = wibox.widget.textbox(awful.util.pread("uname -r"))
 
-    local w_kernel_tb = widget({ type = "textbox" })
-    w_kernel_tb.text = awful.util.pread("uname -r")
-
-    left_widgets = join_tables(left_widgets, {w_kernel_img, spacer, w_kernel_tb})
+    left_layout:add(w_kernel_img)
+    left_layout:add(spacer)
+    left_layout:add(w_kernel_tb)
     -- }}}
-
-    -- Textclock
-    right_widgets = join_tables(right_widgets, {mytextclock, separator})
 
     if vicious_loaded then
         -- {{{ CPU
         -- Initialize widget
-        local w_cpu_img = widget({ type = "imagebox" })
-        w_cpu_img.image = image(beautiful.widget_cpu)
-
+        local w_cpu_img = wibox.widget.imagebox(beautiful.widget_cpu)
         local w_cpu_g = awful.widget.graph()
 
         -- options
@@ -339,12 +332,14 @@ do
 
         -- Register widget
         vicious.register(w_cpu_g, vicious.widgets.cpu, "$1", 3)
-        left_widgets = join_tables(left_widgets, {separator, w_cpu_img, spacer, w_cpu_g})
+        left_layout:add(separator)
+        left_layout:add(w_cpu_img)
+        left_layout:add(spacer)
+        left_layout:add(w_cpu_g)
         -- }}}
         --
         -- {{{ Memory usage
-        local w_mem_img = widget({ type = "imagebox" })
-        w_mem_img.image = image(beautiful.widget_mem)
+        local w_mem_img = wibox.widget.imagebox(beautiful.widget_mem)
 
         -- Initialize widget
         w_mem_b = awful.widget.progressbar()
@@ -356,20 +351,22 @@ do
         w_mem_b:set_color(beautiful.fg_widget)
         -- Register widget
         vicious.register(w_mem_b, vicious.widgets.mem, "$1", 13)
-        left_widgets = join_tables(left_widgets, {separator, w_mem_img, spacer, w_mem_b})
+        left_layout:add(separator)
+        left_layout:add(w_mem_img)
+        left_layout:add(spacer)
+        left_layout:add(w_mem_b)
         -- }}}
 
         -- {{{ File system usage
-        w_fs_img = widget({ type = "imagebox" })
-        w_fs_img.image = image(beautiful.widget_fs)
+        local w_fs_img = wibox.widget.imagebox(beautiful.widget_fs)
         -- Initialize widgets
         w_fs_p = {
           r = awful.widget.progressbar(),
           h = awful.widget.progressbar()
         }
         w_fs_tb = {
-            r = widget({ type = "textbox" }),
-            h = widget({ type = "textbox" })
+            r = wibox.widget.textbox(),
+            h = wibox.widget.textbox()
         }
 
         -- Set progressbars properties
@@ -388,53 +385,73 @@ do
         vicious.register(w_fs_tb.r, vicious.widgets.fs, "${/ used_p}%", 599)
         vicious.register(w_fs_tb.h, vicious.widgets.fs, "${/home used_p}%", 599)
 
-        left_widgets = join_tables(left_widgets,
-            {separator, w_fs_img, spacer,
-            w_fs_tb.r, spacer, w_fs_p.r, spacer,
-            w_fs_tb.h, spacer, w_fs_p.h})
+        left_layout:add(separator)
+        left_layout:add(w_fs_img)
+        left_layout:add(spacer)
+        left_layout:add(w_fs_tb.r)
+        left_layout:add(spacer)
+        left_layout:add(w_fs_p.r)
+        left_layout:add(spacer)
+        left_layout:add(w_fs_tb.h)
+        left_layout:add(spacer)
+        left_layout:add(w_fs_p.h)
         -- }}}
 
         if network then
             -- {{{ Wifi Infos
             if wifi then
-                w_wifi_img = widget({ type = "imagebox" })
-                w_wifi_img.image = image(beautiful.widget_wifi)
+                w_wifi_img = wibox.widget.imagebox(beautiful.widget_wifi)
 
-                w_wifi_tb = widget({ type = "textbox" })
+                w_wifi_tb = wibox.widget.textbox()
                 vicious.register(w_wifi_tb, vicious.widgets.wifi, '${link}% [${ssid}]', 2, network)
-                left_widgets = join_tables(left_widgets, {separator, w_wifi_img, spacer, w_wifi_tb})
+                left_layout:add(separator)
+                left_layout:add(w_wifi_img)
+                left_layout:add(spacer)
+                left_layout:add(w_wifi_tb)
             end
             -- }}}
             -- {{{ Network usage
-            w_netdown_img = widget({ type = "imagebox" })
-            w_netdown_img.image = image(beautiful.widget_down)
+            w_netdown_img = wibox.widget.imagebox(beautiful.widget_down)
+            w_netup_img = wibox.widget.imagebox(beautiful.widget_up)
 
-            w_netup_img = widget({ type = "imagebox" })
-            w_netup_img.image = image(beautiful.widget_up)
-
-            w_net_tb = widget({ type = "textbox" })
+            w_net_tb = wibox.widget.textbox()
             vicious.register(w_net_tb, vicious.widgets.net, '${'..network..' down_kb}  ${'..network..' up_kb}', 3)
 
-            left_widgets = join_tables(left_widgets, {separator, w_netdown_img, spacer, w_net_tb, spacer, w_netup_img})
+            left_layout:add(separator)
+            left_layout:add(w_netdown_img)
+            left_layout:add(spacer)
+            left_layout:add(w_net_tb)
+            left_layout:add(spacer)
+            left_layout:add(w_netup_img)
             -- }}}
         end
     end
 
     if iniquitous_loaded then
+        -- MPD widget
+        right_layout:add(w_music_img)
+        right_layout:add(spacer)
+        right_layout:add(w_music_tb)
+
         -- {{{ Volume widget
         iniquitous.volume.init(sound, channel)
         local w_vol_tb = iniquitous.volume.textbox()
         local w_vol_img = iniquitous.volume.imagebox()
 
-        right_widgets = join_tables(right_widgets, {w_vol_tb, spacer, w_vol_img, separator})
+        right_layout:add(separator)
+        right_layout:add(w_vol_img)
+        right_layout:add(spacer)
+        right_layout:add(w_vol_tb)
         -- }}}
-
-        -- MPD widget
-        right_widgets = join_tables(right_widgets, {w_music_tb, spacer, w_music_img})
     end
 
-    table.insert(right_widgets, left_widgets)
+    right_layout:add(mytextclock)
     mybottomwibox.widgets = right_widgets
+    local layout = wibox.layout.align.horizontal()
+    layout:set_left(left_layout)
+    layout:set_right(right_layout)
+
+    mybottomwibox:set_widget(layout)
 end
 -- }}}
 
