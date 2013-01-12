@@ -1,14 +1,18 @@
 -- Standard awesome library
-require("awful")
+local gears = require("gears")
+local awful = require("awful")
 require("awful.autofocus")
-require("awful.rules")
+-- Widget and layout library
+local wibox = require("wibox")
 -- Theme handling library
-require("beautiful")
+local beautiful = require("beautiful")
 -- Notification library
-require("naughty")
+local naughty = require("naughty")
+local menubar = require("menubar")
 
-require("util")
-config_loaded = pcall(function() require("config") end)
+local util = require("util")
+local config = {}
+config_loaded = pcall(function() config = require("config") end)
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -57,6 +61,7 @@ modkey = "Mod4"
 -- Table of layouts to cover with awful.layout.inc, order matters.
 layouts =
 {
+    awful.layout.suit.floating,
     awful.layout.suit.tile,
     awful.layout.suit.tile.left,
     awful.layout.suit.tile.bottom,
@@ -68,29 +73,29 @@ layouts =
     awful.layout.suit.max,
     awful.layout.suit.max.fullscreen,
     --awful.layout.suit.magnifier
-    awful.layout.suit.floating,
 }
 -- }}}
 
 -- {{{ Loading of additionnal libraries
 -- Dynamic tagging library
-shifty_loaded = pcall(function() require("shifty") end)
+local shifty = {}
+shifty_loaded = pcall(function() shifty = require("shifty") end)
 -- Stop loading this config if shifty is not available
 if not shifty_loaded then
     error("needs shifty to run properly")
 end
 -- Widgets library
-iniquitous_loaded = pcall(function() require("iniquitous") end)
+local iniquitous = {}
+iniquitous_loaded = pcall(function() iniquitous = require("iniquitous") end)
 if not iniquitous_loaded then
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, Iniquitous is not available!",
                      text = "Install Iniquitous library to use more widgets." })
     io.stderr:write("needs iniquitous for more advanced widgets\n")
 end
-vicious_loaded = pcall(function() require("vicious") end)
-if vicious_loaded then
-    vicious = package.loaded["vicious"]
-else
+local vicious = {}
+vicious_loaded = pcall(function() vicious = require("vicious") end)
+if not vicious_loaded then
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, Vicious is not available!",
                      text = "Install Vicious library to use more widgets." })
