@@ -7,3 +7,6 @@
 [submodule "iniquitous"]
 	path = iniquitous
 	url = https://github.com/gdott9/awesome-iniquitous.git
+[submodule "tyrannical"]
+	path = tyrannical
+	url = https://github.com/Elv13/tyrannical.git
