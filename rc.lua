@@ -280,8 +280,8 @@ for s = 1, screen.count() do
     local left_layout = wibox.layout.fixed.horizontal()
     if s == 1 then left_layout:add(mylauncher) end
     left_layout:add(mytaglist[s])
-    left_layout:add(mypromptbox[s])
     left_layout:add(mylayoutbox[s])
+    left_layout:add(mypromptbox[s])
 
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
@@ -406,7 +406,7 @@ do
                 w_wifi_img = wibox.widget.imagebox(beautiful.widget_wifi)
 
                 w_wifi_tb = wibox.widget.textbox()
-                vicious.register(w_wifi_tb, vicious.widgets.wifi, '${link}% [${ssid}]', 2, network)
+                vicious.register(w_wifi_tb, vicious.widgets.wifi, '${link}% [${ssid}]', 23, network)
                 left_layout:add(separator)
                 left_layout:add(w_wifi_img)
                 left_layout:add(spacer)
@@ -418,7 +418,7 @@ do
             w_netup_img = wibox.widget.imagebox(beautiful.widget_up)
 
             w_net_tb = wibox.widget.textbox()
-            vicious.register(w_net_tb, vicious.widgets.net, '${'..network..' down_kb}  ${'..network..' up_kb}', 3)
+            vicious.register(w_net_tb, vicious.widgets.net, '${'..network..' down_kb}  ${'..network..' up_kb}', 5)
 
             left_layout:add(separator)
             left_layout:add(w_netdown_img)
