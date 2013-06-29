@@ -1,6 +1,3 @@
-[submodule "shifty"]
-	path = shifty
-	url = https://github.com/bioe007/awesome-shifty.git
 [submodule "vicious"]
 	path = vicious
 	url = http://git.sysphere.org/vicious/
