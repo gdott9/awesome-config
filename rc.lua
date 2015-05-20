@@ -10,7 +10,6 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
-local menubar = require("menubar")
 
 local util = require("util")
 local config = {}
@@ -99,6 +98,9 @@ end
 -- }}}
 
 -- {{{ Tyrannical Tags
+tyrannical.settings.default_layout = awful.layout.suit.tile.left
+tyrannical.settings.mwfact = 0.66
+
 tyrannical.tags = {
     {
         name        = "ア",
@@ -144,52 +146,24 @@ tyrannical.tags = {
 
 -- Ignore the tag "exclusive" property for the following clients (matched by classes)
 tyrannical.properties.intrusive = {
-    "ksnapshot"     , "pinentry"       , "gtksu"     , "kcalc"        , "xcalc"               ,
-    "feh"           , "Gradient editor", "About KDE" , "Paste Special", "Background color"    ,
-    "kcolorchooser" , "plasmoidviewer" , "Xephyr"    , "kruler"       , "plasmaengineexplorer",
-    "gcolor",
+  "gcolor2", "Xephyr", "feh",
 }
 
 -- Ignore the tiled layout for the matching clients
 tyrannical.properties.floating = {
-    "MPlayer"      , "pinentry"        , "ksnapshot"  , "pinentry"     , "gtksu"          ,
-    "xine"         , "feh"             , "kmix"       , "kcalc"        , "xcalc"          ,
-    "yakuake"      , "Select Color$"   , "kruler"     , "kcolorchooser", "Paste Special"  ,
-    "New Form"     , "Insert Picture"  , "kcharselect", "mythfrontend" , "plasmoidviewer" 
+  "mpv", "Xephyr", "feh", "gcolor2",
 }
 
 -- Make the matching clients (by classes) on top of the default layout
 tyrannical.properties.ontop = {
-    "Xephyr"       , "ksnapshot"       , "kruler"
+    "Xephyr",
 }
 
 -- Force the matching clients (by classes) to be centered on the screen on init
 tyrannical.properties.centered = {
-    "kcalc"
 }
 
-tyrannical.properties.size_hints_honor = { xterm = false, URxvt = false, aterm = false, sauer_client = false, mythfrontend  = false}
--- }}}
-
--- {{{ Menu
--- Create a laucher widget and a main menu
-myawesomemenu = {
-   { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awesome.conffile },
-   { "restart", awesome.restart },
-   { "quit", awesome.quit }
-}
-
-mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", terminal }
-                                  }
-                        })
-
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-                                     menu = mymainmenu })
-
--- Menubar configuration
-menubar.utils.terminal = terminal -- Set the terminal for applications that require it
+tyrannical.properties.size_hints_honor = { xterm = false, URxvt = false }
 -- }}}
 
 -- {{{ Wibox
@@ -201,47 +175,6 @@ local separator = wibox.widget.textbox("     ")
 
 -- Create a textclock widget
 mytextclock = awful.widget.textclock(" %a %b %d, %H:%M:%S ", 1)
-
--- Add a calendar on the textclock widget
-local calendar = nil
-local offset = 0
-
-function remove_calendar()
-    if calendar ~= nil then
-        naughty.destroy(calendar)
-        calendar = nil
-        offset = 0
-    end
-end
-
-function add_calendar(inc_offset)
-    local save_offset = offset
-    remove_calendar()
-    offset = save_offset + inc_offset
-
-    local datespec = os.date("*t")
-    datespec = datespec.year * 12 + datespec.month - 1 + offset
-    datespec = (datespec % 12 + 1) .. " " .. math.floor(datespec / 12)
-    local cal = awful.util.pread("/usr/bin/cal -m " .. datespec .. " | cat")
-    cal = string.gsub(cal, "^%s*(.-)%s*$", "%1")
-
-    calendar = naughty.notify({
-        text = string.format('<span font_desc="%s">%s</span>', "monospace", cal),
-        timeout = 0, hover_timeout = 0.5,
-        width = 115,
-    })
-end
-
-mytextclock:connect_signal("mouse::leave", remove_calendar)
-
-mytextclock:buttons(awful.util.table.join(
-    -- Current month on click
-    awful.button({ }, 1, function() add_calendar(0) end),
-    -- Previous month on mouse wheel up
-    awful.button({ }, 4, function() add_calendar(-1) end),
-    -- Next month on mouse wheel down
-    awful.button({ }, 5, function() add_calendar(1) end)
-))
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -272,14 +205,6 @@ mytasklist.buttons = awful.util.table.join(
                                                   -- the client, if needed
                                                   client.focus = c
                                                   c:raise()
-
-                                                  -- Print client infos on click on the tasklist
-                                                  if debug_mode then
-                                                      c_infos = "class:" ..c.class ..
-                                                        "\tinstance:" .. c.instance ..
-                                                        "\tname:" .. c.name
-                                                      io.stderr:write(c_infos .. "\n")
-                                                  end
                                                 end
                                           end),
                      awful.button({ }, 4, function ()
@@ -304,8 +229,8 @@ for s = 1, screen.count() do
     -- Create a layoubox
     mylayoutbox[s] = awful.widget.layoutbox(s)
     mylayoutbox[s]:buttons(awful.util.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc(layouts, -1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(layouts, 1) end)
+                           awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+                           awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end)
                            ))
     -- Create a taglist widget
     mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
@@ -319,7 +244,6 @@ for s = 1, screen.count() do
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
     -- Only add menu on first screen
-    if s == 1 then left_layout:add(mylauncher) end
     left_layout:add(mytaglist[s])
     left_layout:add(mylayoutbox[s])
     left_layout:add(mypromptbox[s])
@@ -547,8 +471,7 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(layouts, -1) end),
 
-    -- restore minimized windows
-    awful.key({ modkey, "Shift" }, "m", awful.client.restore),
+    awful.key({ modkey, "Control" }, "n", awful.client.restore),
 
     -- Prompt
     awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
@@ -560,44 +483,13 @@ globalkeys = awful.util.table.join(
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
               end),
-    -- Menubar
-    awful.key({ modkey }, "y", function() menubar.show() end),
 
-    awful.key({ modkey,           }, "a",
-        function ()
-                  awful.prompt.run({ prompt = "New tag name: " },
-                    mypromptbox[mouse.screen].widget,
-                    function(new_name)
-                        if not new_name or #new_name == 0 then
-                            return
-                        else
-                            props = {selected = true}
-                            if tyrannical.tags_by_name[new_name] then
-                               props = tyrannical.tags_by_name[new_name]
-                            end
-                            t = awful.tag.add(new_name, props)
-                            awful.tag.viewonly(t)
-                        end
-                    end
-                    )
-        end),
-    awful.key({ modkey, "Control" }, "r",
-              function ()
-                awful.prompt.run({ prompt = "New tag name: " },
-                                  mypromptbox[mouse.screen].widget,
-                                  function(new_name)
-                                     if not new_name or #new_name == 0 then
-                                        return
-                                     else
-                                        local screen = mouse.screen
-                                        local tag = awful.tag.selected(screen)
-                                        if tag then
-                                           tag.name = new_name
-                                        end
-                                     end
-                                  end)
-              end),
-    awful.key({ modkey, }, "d", function () awful.tag.delete() end)
+    awful.key({ modkey,           }, "a", util.add_tag),
+    awful.key({ modkey, "Control" }, "r", util.rename_tag),
+    awful.key({ modkey, }, "d", util.delete_tag),
+
+    awful.key({modkey, "Shift"}, "Return", util.term_in_current_tag),
+    awful.key({modkey, "Control"}, "Return", util.new_tag_with_term)
 )
 
 clientkeys = awful.util.table.join(
@@ -605,7 +497,7 @@ clientkeys = awful.util.table.join(
     awful.key({ modkey,           }, "s",      function (c) c.sticky = not c.sticky  end),
     awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end),
     awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ),
-    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
+    awful.key({ modkey, "Mod1" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
     awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
     awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
     awful.key({ modkey, "Control" }, "m",      function (c) c.minimized = true end),
@@ -674,27 +566,6 @@ globalkeys = awful.util.table.join(
 
 -- Set keys
 root.keys(globalkeys)
--- }}}
-
--- {{{ Rules
-awful.rules.rules = {
-    -- All clients will match this rule.
-    { rule = { },
-      properties = { border_width = beautiful.border_width,
-                     border_color = beautiful.border_normal,
-                     focus = awful.client.focus.filter,
-                     keys = clientkeys,
-                     buttons = clientbuttons } },
-    { rule = { class = "MPlayer" },
-      properties = { floating = true } },
-    { rule = { class = "pinentry" },
-      properties = { floating = true } },
-    { rule = { class = "gimp" },
-      properties = { floating = true } },
-    -- Set Firefox to always map on tags number 2 of screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { tag = tags[1][2] } },
-}
 -- }}}
 
 -- {{{ Signals
