@@ -116,6 +116,7 @@ tyrannical.tags = {
         exclusive   = true,
         screen      = {1,2},
         layout      = awful.layout.suit.max,
+        no_focus_stealing_in = true,
         class = {"Firefox", "Iceweasel", "Chromium"},
         exec_once   = {"firefox -P default"}
     },
@@ -139,6 +140,7 @@ tyrannical.tags = {
         exclusive = true,
         screen = screen.count()>1 and 2 or 1,
         layout = awful.layout.suit.max,
+        no_focus_stealing_in = true,
         class = {"Thunderbird", "Icedove"},
         exec_once   = {"thunderbird"},
     },
