@@ -5,13 +5,14 @@ local aw_client = require("awful.client")
 local aw_layout = require("awful.layout")
 local aw_key    = require("awful.key")
 local aw_prompt = require("awful.prompt")
+local aw_screen = require("awful.screen")
 local tyrannical = require("tyrannical")
 
 local util = {}
 
 function util.add_tag()
   aw_prompt.run({ prompt = "New tag name: " },
-    mypromptbox[mouse.screen].widget,
+    aw_screen.focused().mypromptbox.widget,
     function(new_name)
       if not new_name or #new_name == 0 then
         return
