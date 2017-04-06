@@ -109,7 +109,9 @@ if not iniquitous_loaded then
 end
 local vicious = {}
 vicious_loaded = pcall(function() vicious = require("vicious") end)
-if not vicious_loaded then
+if vicious_loaded then
+  vicious.contrib = require("vicious.contrib")
+else
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, Vicious is not available!",
                      text = "Install Vicious library to use more widgets." })
@@ -137,8 +139,8 @@ tyrannical.tags = {
         screen      = {1,2},
         layout      = awful.layout.suit.max,
         no_focus_stealing_in = true,
-        class = {"Navigator", "Firefox", "Iceweasel", "Chromium"},
-        exec_once   = {"firefox -P default"}
+        class = {"Navigator", "Firefox-esr", "Firefox", "Iceweasel", "Chromium"},
+        exec_once   = {"firefox-esr -P default"}
     },
     {
         name = "ウ",
@@ -162,18 +164,18 @@ tyrannical.tags = {
         layout = awful.layout.suit.max,
         no_focus_stealing_in = true,
         class = {"Mail", "Thunderbird", "Icedove"},
-        exec_once   = {"thunderbird"},
+        exec_once   = {"icedove"},
     },
 }
 
 -- Ignore the tag "exclusive" property for the following clients (matched by classes)
 tyrannical.properties.intrusive = {
-  "gcolor2", "Xephyr", "feh",
+  "gcolor2", "Xephyr", "feh", "pavucontrol"
 }
 
 -- Ignore the tiled layout for the matching clients
 tyrannical.properties.floating = {
-  "mpv", "Xephyr", "feh", "gcolor2",
+  "mpv", "Xephyr", "feh", "gcolor2", "pavucontrol"
 }
 
 -- Make the matching clients (by classes) on top of the default layout
@@ -395,17 +397,21 @@ do
         table.insert(right, w_music_img)
         table.insert(right, spacer)
         table.insert(right, w_music_tb)
-
-        -- Volume widget
-        iniquitous.volume.init(sound, channel)
-        local w_vol_tb = iniquitous.volume.textbox()
-        local w_vol_img = iniquitous.volume.imagebox()
-
-        table.insert(right, separator)
-        table.insert(right, w_vol_img)
-        table.insert(right, spacer)
-        table.insert(right, w_vol_tb)
     end
+
+    -- {{{ Volume widget
+    w_vol_tb = wibox.widget.textbox()
+    vicious.register(w_vol_tb, vicious.contrib.pulse, " $1%", 3, sink)
+    w_vol_tb:buttons(awful.util.table.join(
+        awful.button({ }, 1, function() vicious.contrib.pulse.toggle(sink) end),
+        awful.button({ }, 3, function() awful.util.spawn("pavucontrol") end),
+        awful.button({ }, 4, function() vicious.contrib.pulse.add(2, sink) end),
+        awful.button({ }, 5, function() vicious.contrib.pulse.add(-2, sink) end)
+    ))
+
+    table.insert(right, separator)
+    table.insert(right, w_vol_tb)
+    -- }}}
 
     table.insert(right, separator)
     table.insert(right, mytextclock)
@@ -618,9 +624,9 @@ globalkeys = awful.util.table.join(
     awful.key({ }, "XF86AudioPrev", function () io.popen("mpc prev") end),
     awful.key({ }, "XF86AudioNext", function () io.popen("mpc next") end),
 
-    awful.key({ }, "XF86AudioMute", function () iniquitous.volume.volume("mute") end),
-    awful.key({ }, "XF86AudioLowerVolume", function () iniquitous.volume.volume("down") end),
-    awful.key({ }, "XF86AudioRaiseVolume", function () iniquitous.volume.volume("up") end)
+    awful.key({ }, "XF86AudioMute", function () vicious.contrib.pulse.toggle(sink) end),
+    awful.key({ }, "XF86AudioLowerVolume", function () vicious.contrib.pulse.add(-5, sink) end),
+    awful.key({ }, "XF86AudioRaiseVolume", function () vicious.contrib.pulse.add(5, sink) end)
 )
 
 -- Set keys
